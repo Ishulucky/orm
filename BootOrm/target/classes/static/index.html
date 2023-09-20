@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Employee CRUD</title>
+<!-- Bootstrap CSS -->
+<link rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12 text-center">
+                <h2>Employee CRUD using Spring Boot</h2>
+            </div>
+        </div>
+
+        <!-- Create Employee Form -->
+        <h3>Create Employee</h3>
+        <form id="createEmployeeForm">
+            Emp No: <input type="text" id="empno" name="empno"><br>
+            Name: <input type="text" id="eName" name="eName" required><br>
+            Job: <input type="text" id="job" name="job"required><br>
+            Manager: <input type="text" id="mgr" name="mgr" required><br>
+            Salary: <input type="text" id="sal" name="sal" required><br>
+            <input type="submit" value="Create Employee">
+        </form>
+
+        <!-- Display Employees Button -->
+        <button type="button" class="btn btn-primary custom-button"
+            onclick="displayEmployees()">Display Employees</button>
+
+        <!-- Employees Table -->
+        <div class="row table-container">
+            <div class="col-md-12">
+                <table class="table table-bordered" id="table">
+                    <thead>
+                        <tr>
+                            <th>Emp No</th>
+                            <th>Name</th>
+                            <th>Job</th>
+                            <th>Manager</th>
+                            <th>Salary</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    
+    $(document).ready(function () {
+        
+        $('#createEmployeeForm').submit(function (event) {
+            event.preventDefault();
+
+            
+            var empData = {
+                    "empno": $('#empno').val(),
+                    "eName": $('#eName').val(),
+                    "job":  $('#job').val(),
+                    "mgr": $('#mgr').val(),
+                    "sal": $('#sal').val()
+                };
+
+           
+            $.ajax({
+                type: 'POST',
+                url: "emps", 
+                data: JSON.stringify(empData),
+                contentType: 'application/json',
+                success: function (response) {
+                    alert('Employee created successfully!');
+                    displayEmployees();
+                },
+                error: function (error) {
+                    alert('Error: ' + error.responseText);
+                }
+            });
+        });
+    });
+      
+
+        // Display Employees
+        function displayEmployees() {
+            $.ajax({
+                type: "GET",
+                url: "emps",
+                dataType: 'json',
+                success: function(data) {
+                    var output = '';
+                    for (var i = 0; i < data.length; i++) {
+                        output += '<tr>';
+                        output += '<td>' + data[i].empno + '</td>';
+                        output += '<td>' + data[i].eName + '</td>';
+                        output += '<td>' + data[i].job + '</td>';
+                        output += '<td>' + data[i].mgr + '</td>';
+                        output += '<td>' + data[i].sal + '</td>';
+                        output += '<td><button type="button" class="btn btn-warning custom-button" onclick="editEmployee('
+                            + data[i].empno  + ')">Update</button> '
+                            + '<button type="button" class="btn btn-danger custom-button" onclick="deleteEmployee('
+                            + data[i].empno  + ')">Delete</button></td>';
+                        output += '</tr>';
+                    }
+                    $("#tableBody").html(output);
+                },
+                error: function(error) {
+                    alert("Error retrieving employees: " + error.responseText);
+                }
+            });
+        }
+
+     // Edit Employee
+        function editEmployee(empno) {
+
+            var employeeData = {
+                    "empno": $('#empno').val(),
+                    "eName": $('#eName').val(),
+                    "job":  $('#job').val(),
+                    "mgr": $('#mgr').val(),
+                    "sal": $('#sal').val()
+                };
+
+            
+            $.ajax({
+                type: "PUT",
+                url:  "/emps/" + empno,
+                data: JSON.stringify(employeeData),
+                contentType: 'application/json',
+                success: function (response) {
+                    alert('Employee updated successfully!');
+                    displayEmployees();
+                },
+                error: function (error) {
+                    alert('Error: ' + error.responseText);
+                }
+            });
+        }
+
+        // Delete Employee
+        function deleteEmployee(empno) {
+            $.ajax({
+                type: "DELETE",
+                url: "/emps/" + empno, // Corrected to empNo
+                success: function() {
+                    alert("Employee deleted successfully");
+                    displayEmployees(); // Refresh the table
+                },
+                error: function(error) {
+                    alert("Error deleting employee: " + error.responseText);
+                    console.log("Error deleting employee: " + error.responseText);
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
